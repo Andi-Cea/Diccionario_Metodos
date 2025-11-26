@@ -10,20 +10,20 @@ def app():
     metodo = st.sidebar.selectbox(
         "Selecciona un método:",
         [
-            "S1 U2 Interpolación Polinomial",
-            "S2 U2 Fórmula de Lagrange",
-            "S3 U2 Interpolación de Newton - Diferencias Finitas",
-            "S4 U2 Diferencias Divididas",
-            "S5 U2 Interpolación de Hermite",
-            "S6 U2 Ajuste de Curvas - Splines",
-            "S7 U2 Regresión Lineal",
-            "S8 U3 Newton-Cotes - Trapecio",
-            "S9 U3 Regla de Simpson 1/3",
-            "S10 U3 Regla de Simpson 3/8",
-            "S11 U3 Integración de Romberg",
-            "S12 U1 Punto Fijo para Sistemas NO lineales",
-            "S13 U1 Método de Newton para Sistemas",
-            "S14 U1 Método de Quasi-Newton"
+            "1.2 Interpolación Polinomial",
+            "2.2 Fórmula de Lagrange",
+            "3.2 Interpolación de Newton - Diferencias Finitas",
+            "4.2 Diferencias Divididas",
+            "5.2 Interpolación de Hermite",
+            "6.2 Ajuste de Curvas - Splines",
+            "7.2 Regresión Lineal",
+            "8.3 Newton-Cotes - Trapecio",
+            "9.3 Regla de Simpson 1/3",
+            "10.3 Regla de Simpson 3/8",
+            "11.3 Integración de Romberg",
+            "12.1 Punto Fijo para Sistemas NO lineales",
+            "13.1 Método de Newton para Sistemas",
+            "14.1 Método de Quasi-Newton"
         ]
     )
     
@@ -35,20 +35,20 @@ def app():
     
     # Diccionario de métodos
     metodos = {
-        "S1 U2 Interpolación Polinomial": interpolacion_polinomial,
-        "S2 U2 Fórmula de Lagrange": lagrange,
-        "S3 U2 Interpolación de Newton - Diferencias Finitas": newton_diferencias_finitas,
-        "S4 U2 Diferencias Divididas": diferencias_divididas,
-        "S5 U2 Interpolación de Hermite": hermite,
-        "S6 U2 Ajuste de Curvas - Splines": splines,
-        "S7 U2 Regresión Lineal": regresion_lineal,
-        "S8 U3 Newton-Cotes - Trapecio": trapecio,
-        "S9 U3 Regla de Simpson 1/3": simpson_13,
-        "S10 U3 Regla de Simpson 3/8": simpson_38,
-        "S11 U3 Integración de Romberg": romberg,
-        "S12 U1 Punto Fijo para Sistemas NO lineales": punto_fijo_sistemas,
-        "S13 U1 Método de Newton para Sistemas": newton_sistemas,
-        "S14 U1 Método de Quasi-Newton": quasi_newton
+        "1.2 Interpolación Polinomial": interpolacion_polinomial,
+        "2.2 Fórmula de Lagrange": lagrange,
+        "3.2 Interpolación de Newton - Diferencias Finitas": newton_diferencias_finitas,
+        "4.2 Diferencias Divididas": diferencias_divididas,
+        "5.2 Interpolación de Hermite": hermite,
+        "6.2 Ajuste de Curvas - Splines": splines,
+        "7.2 Regresión Lineal": regresion_lineal,
+        "8.3 Newton-Cotes - Trapecio": trapecio,
+        "9.3 Regla de Simpson 1/3": simpson_13,
+        "10.3 Regla de Simpson 3/8": simpson_38,
+        "11.3 Integración de Romberg": romberg,
+        "12.1 Punto Fijo para Sistemas NO lineales": punto_fijo_sistemas,
+        "13.1 Método de Newton para Sistemas": newton_sistemas,
+        "14.1 Método de Quasi-Newton": quasi_newton
     }
     
     # Mostrar puntuación
