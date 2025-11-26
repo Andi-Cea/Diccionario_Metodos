@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-import ejemplos  # Nueva vista
+import ejemplos
 
 # ========================
 # Helpers JSON
@@ -45,26 +45,23 @@ def delete_definicion(termino):
     save_data(data)
 
 # ========================
-# Importar vistas de Métodos Numéricos
+# Importar vistas
 # ========================
 from metodos_numericos import metodos_numericos
 from metodos_numericos_dos import metodos_numericos_dos
 
 # ========================
-# Configuración de la app
+# Configuración
 # ========================
 st.set_page_config(page_title="Diccionario Métodos Numéricos", layout="centered")
 
-# ========================
-# Menú lateral
-# ========================
 menu = st.sidebar.radio(
     "Selecciona una vista:",
     ["Diccionario", "Métodos Numéricos I", "Métodos Numéricos II", "Ejemplos"]
 )
 
 # ===========================================================
-# VISTA DICCIONARIO (igual que Cálculo III)
+# VISTA DICCIONARIO
 # ===========================================================
 if menu == "Diccionario":
     st.title("📘 Diccionario de Métodos Numéricos")
@@ -94,7 +91,7 @@ if menu == "Diccionario":
     st.markdown("---")
     st.subheader(f"Resultados ({len(results)})")
 
-    # Expanders como en Cálculo III
+    # Expanders para cada término
     for palabra, defin in results:
         with st.expander(palabra):
             st.write(defin)
@@ -118,7 +115,6 @@ if menu == "Diccionario":
 
     # Formulario Agregar / Editar
     st.subheader("Añadir o editar término")
-
     default_word = st.session_state.get("edit_word", "")
     default_def = st.session_state.get("edit_def", "")
 
@@ -138,24 +134,22 @@ if menu == "Diccionario":
                 registro_id = st.session_state["edit_id"]
                 update_definicion_by_id(registro_id, word, definition)
                 st.success(f"Actualizado: {word}")
-
                 del st.session_state["edit_word"]
                 del st.session_state["edit_def"]
                 del st.session_state["edit_id"]
             else:
                 insert_definicion(word, definition)
                 st.success(f"Guardado: {word}")
-
             st.rerun()
 
-    # Tabla completa
+    # Mostrar tabla completa
     if st.checkbox("Mostrar tabla completa"):
         if rows:
             df = pd.DataFrame(rows, columns=["ID", "Término", "Definición"])
             st.dataframe(df, use_container_width=True)
 
 # ===========================================================
-# VISTAS DE MÉTODOS NUMÉRICOS
+# VISTAS MÉTODOS NUMÉRICOS
 # ===========================================================
 elif menu == "Métodos Numéricos I":
     metodos_numericos.app()
@@ -168,7 +162,5 @@ elif menu == "Métodos Numéricos II":
 # ===========================================================
 elif menu == "Ejemplos":
     ejemplos.app()
-
-
 
 
