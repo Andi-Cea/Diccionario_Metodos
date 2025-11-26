@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import json
 import os
+import ejemplos  # Nueva vista
 
 # ========================
 # Helpers JSON
@@ -44,23 +45,26 @@ def delete_definicion(termino):
     save_data(data)
 
 # ========================
-# Importar vistas
+# Importar vistas de Métodos Numéricos
 # ========================
 from metodos_numericos import metodos_numericos
 from metodos_numericos_dos import metodos_numericos_dos
 
 # ========================
-# Configuración
+# Configuración de la app
 # ========================
 st.set_page_config(page_title="Diccionario Métodos Numéricos", layout="centered")
 
+# ========================
+# Menú lateral
+# ========================
 menu = st.sidebar.radio(
     "Selecciona una vista:",
-    ["Diccionario", "Métodos Numéricos I", "Métodos Numéricos II"]
+    ["Diccionario", "Métodos Numéricos I", "Métodos Numéricos II", "Ejemplos"]
 )
 
 # ===========================================================
-# VISTA DICCIONARIO (MISMA QUE CÁLCULO III)
+# VISTA DICCIONARIO (igual que Cálculo III)
 # ===========================================================
 if menu == "Diccionario":
     st.title("📘 Diccionario de Métodos Numéricos")
@@ -90,7 +94,7 @@ if menu == "Diccionario":
     st.markdown("---")
     st.subheader(f"Resultados ({len(results)})")
 
-    # Expanders como en Cálculo
+    # Expanders como en Cálculo III
     for palabra, defin in results:
         with st.expander(palabra):
             st.write(defin)
@@ -112,7 +116,7 @@ if menu == "Diccionario":
 
     st.markdown("---")
 
-    # Formulario Agregar/Editar (idéntico al de Cálculo)
+    # Formulario Agregar / Editar
     st.subheader("Añadir o editar término")
 
     default_word = st.session_state.get("edit_word", "")
@@ -138,7 +142,6 @@ if menu == "Diccionario":
                 del st.session_state["edit_word"]
                 del st.session_state["edit_def"]
                 del st.session_state["edit_id"]
-
             else:
                 insert_definicion(word, definition)
                 st.success(f"Guardado: {word}")
@@ -159,8 +162,13 @@ elif menu == "Métodos Numéricos I":
 
 elif menu == "Métodos Numéricos II":
     metodos_numericos_dos.app()
-elif menu == "Métodos Numéricos Ejemplos":
-    metodos_numericos_dos.app()
+
+# ===========================================================
+# VISTA EJEMPLOS
+# ===========================================================
+elif menu == "Ejemplos":
+    ejemplos.app()
+
 
 
 
