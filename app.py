@@ -61,7 +61,7 @@ st.set_page_config(page_title="Diccionario Métodos Numéricos", layout="centere
 # ========================
 menu = st.sidebar.radio(
     "Selecciona una vista:",
-    ["Diccionario", "Métodos Numéricos I", "Métodos Numéricos II", "Ejemplos", "Ejemplos2"]
+    ["Diccionario", "Métodos Numéricos I", "Métodos Numéricos II", "Ejemplos Métodos Numéricos I", "Ejemplos Métodos Numéricos II"]
 )
 
 # ===========================================================
