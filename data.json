@@ -1,4 +1,5 @@
-{"conceptos":[
+{
+  "conceptos": [
     {"id": 1, "termino": "Ajuste", "definicion": "Construcción de una función que se aproxime a datos."},
     {"id": 2, "termino": "Algoritmo", "definicion": "Conjunto finito de pasos para resolver un problema."},
     {"id": 3, "termino": "Aproximación", "definicion": "Obtener valores cercanos al verdadero."},
@@ -49,4 +50,5 @@
     {"id": 48, "termino": "Valor inicial", "definicion": "Condición por la que comienza un problema diferencial."},
     {"id": 49, "termino": "Valor frontera", "definicion": "Condiciones en extremos de un intervalo para EDO/EDP."},
     {"id": 50, "termino": "Verificación", "definicion": "Revisar que el método funciona como se espera."}
-]}
+  ]
+}
