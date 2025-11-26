@@ -1,63 +1,43 @@
-import psycopg2
-import streamlit as st
+import json
+import os
 
-DB_URL = st.secrets["DB_URL"]
+FILE = "data.json"
 
-def get_conn():
-    return psycopg2.connect(DB_URL)
+def load():
+    if not os.path.exists(FILE):
+        with open(FILE, "w") as f:
+            json.dump([], f)
+    with open(FILE, "r") as f:
+        return json.load(f)
 
-def create_table():
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS definicions (
-            id SERIAL PRIMARY KEY,
-            termino TEXT UNIQUE NOT NULL,
-            definicion TEXT NOT NULL
-        );
-    """)
-    conn.commit()
-    cur.close()
-    conn.close()
-
-def insert_definicion(termino, definicion):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO definicions (termino, definicion)
-        VALUES (%s, %s)
-        ON CONFLICT (termino)
-        DO UPDATE SET definicion = EXCLUDED.definicion;
-    """, (termino, definicion))
-    conn.commit()
-    cur.close()
-    conn.close()
+def save(data):
+    with open(FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
 def get_definicions():
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT id, termino, definicion FROM definicions ORDER BY termino;")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return rows
+    return load()
 
-def update_definicion(termino, definicion):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        UPDATE definicions
-        SET definicion = %s
-        WHERE termino = %s;
-    """, (definicion, termino))
-    conn.commit()
-    cur.close()
-    conn.close()
+def insert_definicion(termino, definicion):
+    data = load()
 
-def delete_definicion(termino):
-    conn = get_conn()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM definicions WHERE termino = %s;", (termino,))
-    conn.commit()
-    cur.close()
-    conn.close()
+    # Si existe, actualiza
+    for item in data:
+        if item["termino"].lower() == termino.lower():
+            item["definicion"] = definicion
+            save(data)
+            return
+
+    # Si no existe, crea nuevo
+    new_id = max([x["id"] for x in data], default=0) + 1
+    data.append({
+        "id": new_id,
+        "termino": termino,
+        "definicion": definicion
+    })
+    save(data)
+
+def delete_definicion(id):
+    data = load()
+    data = [x for x in data if x["id"] != id]
+    save(data)
+
