@@ -73,7 +73,7 @@ if menu == "Principal":
             with colB:
                 if st.button("🗑️ Eliminar", key=f"del_{palabra}"):
                     try:
-                        delete_definicion(palabra)
+                        delete_definicion(data[palabra][0])  # <<< FIX: borrar por ID
                         st.success(f"'{palabra}' eliminado correctamente.")
                         st.rerun()
                     except Exception as e:
@@ -110,15 +110,13 @@ if menu == "Principal":
                 original = st.session_state.get("edit_word")
                 if original and original != word:
                     try:
-                        delete_definicion(original)
+                        delete_definicion(data[original][0])
                     except:
                         pass
 
                 # limpiar estado de edición
-                if "edit_word" in st.session_state:
-                    del st.session_state["edit_word"]
-                if "edit_def" in st.session_state:
-                    del st.session_state["edit_def"]
+                st.session_state.pop("edit_word", None)
+                st.session_state.pop("edit_def", None)
 
                 st.rerun()
 
@@ -138,3 +136,4 @@ elif menu == "Métodos Numéricos I":
 
 elif menu == "Métodos Numéricos II":
     metodos_numericos_dos.app()
+
