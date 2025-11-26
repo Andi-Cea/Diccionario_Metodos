@@ -6,7 +6,7 @@ from db import get_definicions, insert_definicion, delete_definicion
 from metodos_numericos import metodos_numericos
 from metodos_numericos_dos import metodos_numericos_dos
 
-st.set_page_config(page_title="Diccionario Local", layout="centered")
+st.set_page_config(page_title="Diccionario  ", layout="centered")
 
 # =========================
 # SIDEBAR
@@ -16,7 +16,7 @@ menu = st.sidebar.radio(
     ["Diccionario", "Agregar", "Eliminar", "Métodos Numéricos I", "Métodos Numéricos II"]
 )
 
-st.title("📘 Diccionario de Métodos Numéricos (Local)")
+st.title("📘 Diccionario de Métodos Numéricos ( )")
 
 # Cargar datos
 data = get_definicions()
