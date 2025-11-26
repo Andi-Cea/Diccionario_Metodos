@@ -1,108 +1,152 @@
 import streamlit as st
 import pandas as pd
-from db import get_definicions, insert_definicion, delete_definicion
+from db import (
+    create_table,
+    insert_definicion,
+    get_definicions,
+    delete_definicion,
+    update_definicion_by_id,
+)
 
-# Importar vistas
+# ==============================
+# Importar vistas de Métodos Numéricos
+# ==============================
 from metodos_numericos import metodos_numericos
 from metodos_numericos_dos import metodos_numericos_dos
 
-# Configuración general
-st.set_page_config(page_title="Diccionario Local", layout="centered")
+# --- CONFIGURACIÓN ---
+st.set_page_config(page_title="Diccionario Métodos Numéricos", layout="centered")
 
-# ============ MENÚ LATERAL ============
+# Crear tabla al iniciar
+try:
+    create_table()
+except Exception as e:
+    st.error(f"No se pudo crear la tabla: {e}")
+
+# --- MENÚ LATERAL ---
 menu = st.sidebar.radio(
-    "Navegación",
-    ["Diccionario", "Métodos Numéricos I", "Métodos Numéricos II"]
+    "Selecciona una vista:",
+    [
+        "Diccionario",
+        "Métodos Numéricos I",
+        "Métodos Numéricos II",
+    ]
 )
 
-st.title("📘 Diccionario de Métodos Numéricos (Local)")
-
-# ======================================
-#      DICCIONARIO (LOCAL JSON)
-# ======================================
-
+# ===========================================================
+# VISTA DICCIONARIO (idéntica a la que ya tienes)
+# ===========================================================
 if menu == "Diccionario":
+    st.title("📘 Diccionario interactivo de Métodos Numéricos")
 
-    sub = st.radio(
-        "Selecciona una sección:",
-        ["Buscar", "Agregar / Editar", "Eliminar", "Ver todos"]
-    )
+    col1, col2 = st.columns([3, 1])
 
-    data = get_definicions()
+    with col1:
+        query = st.text_input("Buscar término", value="", placeholder="Escribe una palabra...")
 
-    # ------- BUSCAR -------
-    if sub == "Buscar":
-        st.subheader("Buscar término")
+    with col2:
+        exact = st.checkbox("Búsqueda exacta", value=False)
 
-        buscar = st.text_input("Escribe algo para buscar:")
+    try:
+        rows = get_definicions()
+    except Exception as e:
+        st.error(f"No se pudieron cargar las definiciones: {e}")
+        rows = []
 
-        if buscar:
-            filtrado = [
-                x for x in data
-                if buscar.lower() in x["termino"].lower() 
-                or buscar.lower() in x["definicion"].lower()
-            ]
+    data = {r[1]: r[2] for r in rows}
+    id_map = {r[1]: r[0] for r in rows}
+
+    def search(q, exact_match):
+        q = q.strip().lower()
+        if not q:
+            return sorted(data.items())
+
+        if exact_match:
+            return [(k, v) for k, v in data.items() if k.lower() == q]
+
+        return [(k, v) for k, v in data.items() if q in k.lower() or q in v.lower()]
+
+    results = search(query, exact)
+
+    st.markdown("---")
+    st.subheader(f"Resultados ({len(results)})")
+
+    for palabra, defin in results:
+        with st.expander(palabra):
+            st.write(defin)
+
+            colA, colB = st.columns(2)
+
+            with colA:
+                if st.button("✏️ Editar", key=f"edit_{palabra}"):
+                    st.session_state["edit_word"] = palabra
+                    st.session_state["edit_def"] = defin
+                    st.session_state["edit_id"] = id_map[palabra]
+                    st.rerun()
+
+            with colB:
+                if st.button("🗑️ Eliminar", key=f"del_{palabra}"):
+                    try:
+                        delete_definicion(palabra)
+                        st.success(f"'{palabra}' eliminado correctamente.")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"No se pudo eliminar: {e}")
+
+    st.markdown("---")
+
+    # FORMULARIO PARA AGREGAR / EDITAR
+    st.subheader("Añadir o editar término")
+
+    default_word = st.session_state.get("edit_word", "")
+    default_def = st.session_state.get("edit_def", "")
+
+    with st.form("form_add"):
+        word = st.text_input("Término", value=default_word)
+        definition = st.text_area("Definición", value=default_def, height=150)
+        submitted = st.form_submit_button("Guardar")
+
+    if submitted:
+        word = word.strip()
+        definition = definition.strip()
+
+        if not word:
+            st.error("El término no puede estar vacío.")
         else:
-            filtrado = data
+            try:
+                if "edit_id" in st.session_state:
+                    registro_id = st.session_state["edit_id"]
+                    update_definicion_by_id(registro_id, word, definition)
+                    st.success(f"Actualizado correctamente: {word}")
 
-        if filtrado:
-            st.dataframe(pd.DataFrame(filtrado))
-        else:
-            st.info("No se encontraron resultados.")
+                    del st.session_state["edit_word"]
+                    del st.session_state["edit_def"]
+                    del st.session_state["edit_id"]
 
-    # ------- AGREGAR / EDITAR -------
-    elif sub == "Agregar / Editar":
-        st.subheader("Agregar o actualizar término")
+                else:
+                    insert_definicion(word, definition)
+                    st.success(f"Guardado: {word}")
 
-        t = st.text_input("Término:")
-        d = st.text_area("Definición:")
-
-        if st.button("Guardar"):
-            if t.strip() and d.strip():
-                insert_definicion(t, d)
-                st.success(f"'{t}' guardado correctamente.")
                 st.rerun()
-            else:
-                st.error("Completa ambos campos.")
 
-    # ------- ELIMINAR -------
-    elif sub == "Eliminar":
-        st.subheader("Eliminar término")
+            except Exception as e:
+                st.error(f"No se pudo guardar el término: {e}")
 
-        df = pd.DataFrame(data)
-        if not df.empty:
-            st.dataframe(df)
-
-            id_borrar = st.number_input("ID a borrar", min_value=1, step=1)
-            if st.button("Eliminar"):
-                delete_definicion(id_borrar)
-                st.warning("Eliminado correctamente.")
-                st.rerun()
-        else:
-            st.info("No hay datos para eliminar.")
-
-    # ------- VER TODO -------
-    elif sub == "Ver todos":
-        st.subheader("Todos los términos")
-        df = pd.DataFrame(data)
-
-        if not df.empty:
-            st.dataframe(df)
-        else:
-            st.info("Aún no hay términos registrados.")
+    if st.checkbox("Mostrar tabla completa"):
+        if rows:
+            df = pd.DataFrame(rows, columns=["ID", "Término", "Definición"])
+            st.dataframe(df, use_container_width=True)
 
 
-# ======================================
-#      MÉTODOS NUMÉRICOS I
-# ======================================
+# ===========================================================
+# VISTAS DE MÉTODOS
+# ===========================================================
 elif menu == "Métodos Numéricos I":
     metodos_numericos.app()
 
-
-# ======================================
-#      MÉTODOS NUMÉRICOS II
-# ======================================
 elif menu == "Métodos Numéricos II":
     metodos_numericos_dos.app()
+
+
 
 
