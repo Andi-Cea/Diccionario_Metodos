@@ -4,7 +4,7 @@ import json
 import os
 
 # ========================
-# Helpers JSON (Datos)
+# Helpers JSON
 # ========================
 DATA_FILE = "data.json"
 
@@ -48,10 +48,10 @@ def delete_definicion(termino):
 # ========================
 from metodos_numericos import metodos_numericos
 from metodos_numericos_dos import metodos_numericos_dos
-from ejemplos import app as ejemplos_app  # Importar solo la función de ejemplos
+from ejemplos.ejemplos import app as ejemplos_app  # CORREGIDO: import correcto de la función app
 
 # ========================
-# Configuración de Streamlit
+# Configuración
 # ========================
 st.set_page_config(page_title="Diccionario Métodos Numéricos", layout="centered")
 
@@ -64,7 +64,7 @@ menu = st.sidebar.radio(
 )
 
 # ===========================================================
-# VISTA DICCIONARIO
+# VISTA DICCIONARIO (igual a Cálculo III)
 # ===========================================================
 if menu == "Diccionario":
     st.title("📘 Diccionario de Métodos Numéricos")
@@ -97,13 +97,16 @@ if menu == "Diccionario":
     for palabra, defin in results:
         with st.expander(palabra):
             st.write(defin)
+
             colA, colB = st.columns(2)
+
             with colA:
                 if st.button("✏️ Editar", key=f"edit_{palabra}"):
                     st.session_state["edit_word"] = palabra
                     st.session_state["edit_def"] = defin
                     st.session_state["edit_id"] = id_map[palabra]
                     st.rerun()
+
             with colB:
                 if st.button("🗑️ Eliminar", key=f"del_{palabra}"):
                     delete_definicion(palabra)
@@ -111,8 +114,9 @@ if menu == "Diccionario":
                     st.rerun()
 
     st.markdown("---")
-    st.subheader("Añadir o editar término")
 
+    # Formulario Agregar/Editar
+    st.subheader("Añadir o editar término")
     default_word = st.session_state.get("edit_word", "")
     default_def = st.session_state.get("edit_def", "")
 
@@ -154,9 +158,7 @@ elif menu == "Métodos Numéricos II":
     metodos_numericos_dos.app()
 
 # ===========================================================
-# VISTA DE EJEMPLOS
+# VISTA EJEMPLOS
 # ===========================================================
 elif menu == "Ejemplos":
     ejemplos_app()
-
-
