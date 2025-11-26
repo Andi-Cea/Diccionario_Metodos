@@ -2,26 +2,8 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-# Manejo de matplotlib con try-except
-try:
-    import matplotlib.pyplot as plt
-    MATPLOTLIB_AVAILABLE = True
-except ImportError:
-    MATPLOTLIB_AVAILABLE = False
-    st.warning("Matplotlib no está disponible. Las gráficas no se mostrarán.")
-
-try:
-    import sympy as sp
-    SYMPY_AVAILABLE = True
-except ImportError:
-    SYMPY_AVAILABLE = False
-    st.warning("Sympy no está disponible. Algunas funciones pueden no trabajar.")
-
 def app():
-    st.title("🔬 Ejemplos Interactivos - Métodos Numéricos")
-    
-    if not MATPLOTLIB_AVAILABLE:
-        st.error("⚠️ Se requiere instalar matplotlib: `pip install matplotlib`")
+    st.title("🎯 Ejercicios Interactivos - Métodos Numéricos")
     
     # Menú de métodos
     metodo = st.sidebar.selectbox(
@@ -34,17 +16,21 @@ def app():
             "2.2 Falsa Posición",
             "2.3 Newton-Raphson",
             "2.4 Secante",
-            "2.5 Bairstow",
             "3.1 Inversión de Matrices",
             "3.2 Gauss",
             "3.3 Gauss-Jordan",
             "3.4 Jacobi",
             "3.5 Gauss-Seidel",
             "4.2 Cholesky",
-            "4.3 Doolittle",
             "5.1 Método de Potencias"
         ]
     )
+    
+    # Inicializar estado de la sesión
+    if 'score' not in st.session_state:
+        st.session_state.score = 0
+    if 'exercises_completed' not in st.session_state:
+        st.session_state.exercises_completed = 0
     
     # Diccionario de métodos
     metodos = {
@@ -55,669 +41,373 @@ def app():
         "2.2 Falsa Posición": falsa_posicion,
         "2.3 Newton-Raphson": newton_raphson,
         "2.4 Secante": secante,
-        "2.5 Bairstow": bairstow,
         "3.1 Inversión de Matrices": inversion_matrices,
         "3.2 Gauss": gauss,
         "3.3 Gauss-Jordan": gauss_jordan,
         "3.4 Jacobi": jacobi,
         "3.5 Gauss-Seidel": gauss_seidel,
         "4.2 Cholesky": cholesky,
-        "4.3 Doolittle": doolittle,
         "5.1 Método de Potencias": metodo_potencias
     }
+    
+    # Mostrar puntuación
+    st.sidebar.markdown("---")
+    st.sidebar.metric("🏆 Puntuación", st.session_state.score)
+    st.sidebar.metric("✅ Ejercicios Completados", st.session_state.exercises_completed)
+    
+    if st.sidebar.button("🔄 Reiniciar Puntuación"):
+        st.session_state.score = 0
+        st.session_state.exercises_completed = 0
+        st.rerun()
     
     # Ejecutar método seleccionado
     if metodo in metodos:
         metodos[metodo]()
 
+def check_answer(correct_answer, user_answer, tolerance=0.01):
+    """Verifica si la respuesta del usuario es correcta"""
+    try:
+        if abs(float(correct_answer) - float(user_answer)) <= tolerance:
+            st.session_state.score += 10
+            st.session_state.exercises_completed += 1
+            st.success("🎉 ¡Correcto! +10 puntos")
+            return True
+        else:
+            st.error("❌ Incorrecto. Intenta nuevamente.")
+            return False
+    except:
+        st.error("❌ Formato inválido. Usa números.")
+        return False
+
 def errores_numericos():
-    st.header("🔍 Errores de Redondeo y Truncamiento")
+    st.header("🔍 Ejercicios - Errores Numéricos")
     
-    col1, col2 = st.columns(2)
+    st.info("Resuelve estos ejercicios sobre errores de redondeo y truncamiento")
     
+    # Ejercicio 1 - Error de redondeo
+    st.subheader("Ejercicio 1: Error de Redondeo")
+    st.write("Calcula el error absoluto al aproximar π (3.1415926535) con 3.14")
+    
+    col1, col2 = st.columns([2, 1])
     with col1:
-        st.subheader("Error de Redondeo")
-        num = st.number_input("Número decimal:", value=0.1, step=0.1)
-        st.write(f"Valor ingresado: {num}")
-        st.write(f"Representación en Python: {num:.20f}")
-        st.write(f"Error absoluto: {abs(num - 0.1):.20f}")
-        
-        # Ejemplo de suma problemática
-        st.write("**Ejemplo problemático:**")
-        a = 0.1
-        b = 0.2
-        c = 0.3
-        st.write(f"0.1 + 0.2 = {a + b}")
-        st.write(f"¿0.1 + 0.2 == 0.3? {a + b == c}")
+        user_answer1 = st.number_input("Error absoluto:", value=0.0, step=0.0001, format="%.6f")
     
     with col2:
-        st.subheader("Error de Truncamiento")
-        x = st.slider("Valor de x para e^x:", 0.1, 2.0, 1.0, 0.1)
-        n_terminos = st.slider("Número de términos Taylor:", 1, 10, 3)
-        
-        # Serie de Taylor truncada
-        def taylor_exp(x, n):
-            resultado = 0
-            for i in range(n):
-                resultado += (x**i) / np.math.factorial(i)
-            return resultado
-        
-        real = np.exp(x)
-        aprox = taylor_exp(x, n_terminos)
-        error = abs(real - aprox)
-        
-        st.write(f"Valor real e^{x}: {real:.6f}")
-        st.write(f"Aproximación: {aprox:.6f}")
-        st.write(f"Error de truncamiento: {error:.6f}")
+        if st.button("Verificar ✅", key="check1"):
+            correct_answer = abs(3.1415926535 - 3.14)
+            check_answer(correct_answer, user_answer1)
+    
+    # Ejercicio 2 - Serie de Taylor
+    st.subheader("Ejercicio 2: Error de Truncamiento")
+    st.write("Aproxima e¹ usando 3 términos de la serie de Taylor:")
+    st.latex(r"e^x \approx 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!}")
+    
+    user_approx = st.number_input("Tu aproximación para e¹:", value=0.0, step=0.1)
+    
+    if st.button("Verificar Aproximación", key="check2"):
+        # Calcular aproximación correcta
+        correct_approx = 1 + 1 + 1/2 + 1/6
+        check_answer(correct_approx, user_approx, 0.001)
+    
+    # Ejercicio 3 - Opción múltiple
+    st.subheader("Ejercicio 3: Pregunta Conceptual")
+    st.write("¿Cuál de estos números tiene mayor error de redondeo en representación binaria?")
+    
+    option = st.radio(
+        "Selecciona la respuesta correcta:",
+        ["0.5", "0.1", "0.25", "0.125"],
+        key="error_q"
+    )
+    
+    if st.button("Verificar Selección", key="check3"):
+        if option == "0.1":
+            st.session_state.score += 10
+            st.session_state.exercises_completed += 1
+            st.success("🎉 ¡Correcto! 0.1 tiene representación infinita periódica en binario")
+        else:
+            st.error("❌ Incorrecto. 0.1 no se puede representar exactamente en binario")
 
 def propagacion_error():
-    st.header("📈 Propagación del Error")
+    st.header("📈 Ejercicios - Propagación del Error")
     
-    st.write("Ingresa valores con sus errores:")
+    st.info("Practica el cálculo de propagación de errores")
     
-    col1, col2 = st.columns(2)
+    # Ejercicio 1 - Suma con errores
+    st.subheader("Ejercicio 1: Suma con Errores")
+    st.write("Si a = 10 ± 0.1 y b = 5 ± 0.2, ¿cuál es el error en a + b?")
     
-    with col1:
-        a = st.number_input("Valor a:", value=10.0)
-        error_a = st.number_input("Error en a:", value=0.1)
-        
-    with col2:
-        b = st.number_input("Valor b:", value=5.0)
-        error_b = st.number_input("Error en b:", value=0.1)
+    user_error_sum = st.number_input("Error en a + b:", value=0.0, step=0.1)
     
-    operacion = st.selectbox("Operación:", ["Suma", "Resta", "Multiplicación", "División"])
+    if st.button("Verificar Suma", key="check_sum"):
+        correct_error = 0.1 + 0.2  # Error absoluto en suma
+        check_answer(correct_error, user_error_sum)
     
-    if operacion == "Suma":
-        resultado = a + b
-        error_propagado = error_a + error_b
-    elif operacion == "Resta":
-        resultado = a - b
-        error_propagado = error_a + error_b
-    elif operacion == "Multiplicación":
-        resultado = a * b
-        error_propagado = abs(b * error_a) + abs(a * error_b)
-    else:  # División
-        resultado = a / b
-        error_propagado = (abs(1/b * error_a) + abs(-a/(b**2) * error_b))
+    # Ejercicio 2 - Multiplicación con errores
+    st.subheader("Ejercicio 2: Multiplicación con Errores")
+    st.write("Para los mismos valores, ¿cuál es el error aproximado en a × b?")
     
-    st.write(f"**Resultado:** {resultado:.4f} ± {error_propagado:.4f}")
-    st.write(f"**Error relativo:** {(error_propagado/abs(resultado))*100:.2f}%")
+    user_error_mult = st.number_input("Error en a × b:", value=0.0, step=0.1)
+    
+    if st.button("Verificar Multiplicación", key="check_mult"):
+        # Error en multiplicación: |b|·Δa + |a|·Δb
+        correct_error = abs(5)*0.1 + abs(10)*0.2
+        check_answer(correct_error, user_error_mult, 0.1)
 
 def orden_convergencia():
-    st.header("📊 Orden de Convergencia")
+    st.header("📊 Ejercicios - Orden de Convergencia")
     
-    if not MATPLOTLIB_AVAILABLE:
-        st.error("Matplotlib no disponible para gráficas")
-        return
+    st.info("Identifica el orden de convergencia de diferentes métodos")
     
-    metodo = st.selectbox("Selecciona método:", 
-                         ["Bisección (lineal)", "Newton (cuadrático)", "Secante (superlineal)"])
+    # Ejercicio 1 - Identificar orden
+    st.subheader("Ejercicio 1: Identificar el Orden")
+    st.write("Observa esta secuencia de errores y determina el orden de convergencia:")
+    st.write("Errores: 0.1, 0.05, 0.0125, 0.00156")
     
-    n_iter = st.slider("Número de iteraciones:", 3, 10, 5)
+    order_guess = st.selectbox(
+        "¿Qué orden de convergencia crees que tiene?",
+        ["Lineal (orden 1)", "Cuadrático (orden 2)", "Superlineal", "No converge"],
+        key="order_q"
+    )
     
-    # Datos de ejemplo para diferentes órdenes
-    if metodo == "Bisección (lineal)":
-        errores = [1/(2**i) for i in range(n_iter)]
-    elif metodo == "Newton (cuadrático)":
-        errores = [1/(2**(2**i)) for i in range(n_iter)]
-    else:  # Secante
-        errores = [1/(1.6**i) for i in range(n_iter)]
-    
-    # Calcular órdenes aproximados
-    ratios = []
-    for i in range(1, len(errores)-1):
-        ratio = np.log(errores[i+1]/errores[i]) / np.log(errores[i]/errores[i-1])
-        ratios.append(ratio)
-    
-    fig, ax = plt.subplots(1, 2, figsize=(12, 4))
-    
-    # Gráfica de errores
-    ax[0].semilogy(range(n_iter), errores, 'bo-', markersize=8)
-    ax[0].set_xlabel('Iteración')
-    ax[0].set_ylabel('Error (escala log)')
-    ax[0].set_title('Convergencia del Error')
-    ax[0].grid(True)
-    
-    # Gráfica de órdenes
-    if ratios:
-        ax[1].plot(range(1, len(ratios)+1), ratios, 'ro-', markersize=8)
-        ax[1].axhline(y=1, color='g', linestyle='--', label='Lineal (orden 1)')
-        ax[1].axhline(y=2, color='b', linestyle='--', label='Cuadrático (orden 2)')
-        ax[1].set_xlabel('Iteración')
-        ax[1].set_ylabel('Orden estimado')
-        ax[1].set_title('Orden de Convergencia')
-        ax[1].legend()
-        ax[1].grid(True)
-    
-    st.pyplot(fig)
-    
-    st.write("**Orden estimado promedio:**", f"{np.mean(ratios):.3f}" if ratios else "N/A")
+    if st.button("Verificar Orden", key="check_order"):
+        if order_guess == "Cuadrático (orden 2)":
+            st.session_state.score += 10
+            st.session_state.exercises_completed += 1
+            st.success("🎉 ¡Correcto! Los errores disminuyen cuadráticamente")
+        else:
+            st.error("❌ Incorrecto. La relación entre errores sugiere convergencia cuadrática")
 
 def biseccion():
-    st.header("🎯 Método de Bisección")
+    st.header("🎯 Ejercicios - Método de Bisección")
     
-    st.write("Encuentra raíces de f(x) = 0 en [a,b]")
+    st.info("Practica el método de bisección para encontrar raíces")
     
-    # Función predefinida
-    funcion = st.selectbox("Función:", 
-                          ["x² - 4", "x³ - 2x - 5", "cos(x) - x", "e^x - 2"])
-    
-    if funcion == "x² - 4":
-        f = lambda x: x**2 - 4
-        a, b = 1, 3
-    elif funcion == "x³ - 2x - 5":
-        f = lambda x: x**3 - 2*x - 5
-        a, b = 2, 3
-    elif funcion == "cos(x) - x":
-        f = lambda x: np.cos(x) - x
-        a, b = 0, 1
-    else:  # e^x - 2
-        f = lambda x: np.exp(x) - 2
-        a, b = 0, 1
+    # Ejercicio 1 - Aplicar bisección
+    st.subheader("Ejercicio 1: Aplicar Bisección")
+    st.write("Encuentra una raíz de f(x) = x² - 4 en el intervalo [1, 3]")
+    st.write("Aplica UNA iteración del método de bisección")
     
     col1, col2 = st.columns(2)
     with col1:
-        a_input = st.number_input("a:", value=float(a))
+        st.write("**Datos iniciales:**")
+        st.write("a = 1, b = 3")
+        st.write("f(1) = -3, f(3) = 5")
+    
     with col2:
-        b_input = st.number_input("b:", value=float(b))
+        user_c = st.number_input("Calcula el punto medio c:", value=0.0, step=0.1)
     
-    tol = st.number_input("Tolerancia:", value=1e-6, format="%.6f")
-    max_iter = st.slider("Máximo iteraciones:", 1, 20, 10)
-    
-    if st.button("Calcular raíz"):
-        if f(a_input) * f(b_input) >= 0:
-            st.error("f(a) y f(b) deben tener signos opuestos")
-            return
-        
-        resultados = []
-        a_curr, b_curr = a_input, b_input
-        
-        for i in range(max_iter):
-            c = (a_curr + b_curr) / 2
-            fc = f(c)
-            resultados.append((i+1, a_curr, b_curr, c, fc))
-            
-            if abs(fc) < tol:
-                break
-                
-            if f(a_curr) * fc < 0:
-                b_curr = c
-            else:
-                a_curr = c
-        
-        # Mostrar resultados
-        df = pd.DataFrame(resultados, 
-                         columns=["Iter", "a", "b", "c", "f(c)"])
-        st.dataframe(df.style.format("{:.6f}"), use_container_width=True)
-        
-        st.success(f"Raíz aproximada: {c:.8f}")
-        
-        # Gráfica si matplotlib está disponible
-        if MATPLOTLIB_AVAILABLE:
-            x_vals = np.linspace(a_input, b_input, 100)
-            y_vals = f(x_vals)
-            
-            fig, ax = plt.subplots()
-            ax.plot(x_vals, y_vals, 'b-', label='f(x)')
-            ax.axhline(y=0, color='k', linestyle='--')
-            ax.plot(c, fc, 'ro', markersize=8, label='Raíz encontrada')
-            ax.set_xlabel('x')
-            ax.set_ylabel('f(x)')
-            ax.legend()
-            ax.grid(True)
-            st.pyplot(fig)
+    if st.button("Verificar Iteración", key="check_bisec"):
+        correct_c = (1 + 3) / 2
+        if check_answer(correct_c, user_c):
+            st.write("**Siguiente paso:** ¿En qué subintervalo continuar?")
+            st.write("f(2) = 0 → ¡Raíz encontrada!")
 
 def falsa_posicion():
-    st.header("📐 Método de Falsa Posición")
+    st.header("📐 Ejercicios - Falsa Posición")
     
-    st.write("Similar a bisección pero usa interpolación lineal")
+    st.info("Practica el método de falsa posición")
     
-    # Usamos las mismas funciones que bisección
-    funcion = st.selectbox("Función:", 
-                          ["x² - 4", "x³ - 2x - 5", "cos(x) - x"])
+    st.subheader("Ejercicio: Falsa Posición")
+    st.write("Para f(x) = x² - 4 en [1, 3], calcula la primera aproximación:")
+    st.latex(r"c = \frac{a \cdot f(b) - b \cdot f(a)}{f(b) - f(a)}")
     
-    if funcion == "x² - 4":
-        f = lambda x: x**2 - 4
-        a, b = 1, 3
-    elif funcion == "x³ - 2x - 5":
-        f = lambda x: x**3 - 2*x - 5
-        a, b = 2, 3
-    else:  # cos(x) - x
-        f = lambda x: np.cos(x) - x
-        a, b = 0, 1
+    st.write("Datos: a=1, b=3, f(a)=-3, f(b)=5")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        a_input = st.number_input("a:", value=float(a), key="falsa_a")
-    with col2:
-        b_input = st.number_input("b:", value=float(b), key="falsa_b")
+    user_c_falsa = st.number_input("Calcula c:", value=0.0, step=0.1)
     
-    if st.button("Calcular con Falsa Posición"):
-        if f(a_input) * f(b_input) >= 0:
-            st.error("f(a) y f(b) deben tener signos opuestos")
-            return
-        
-        resultados = []
-        a_curr, b_curr = a_input, b_input
-        
-        for i in range(10):
-            fa, fb = f(a_curr), f(b_curr)
-            c = (a_curr * fb - b_curr * fa) / (fb - fa)
-            fc = f(c)
-            
-            resultados.append((i+1, a_curr, b_curr, c, fc))
-            
-            if abs(fc) < 1e-6:
-                break
-                
-            if fa * fc < 0:
-                b_curr = c
-            else:
-                a_curr = c
-        
-        df = pd.DataFrame(resultados, 
-                         columns=["Iter", "a", "b", "c", "f(c)"])
-        st.dataframe(df.style.format("{:.6f}"), use_container_width=True)
-        st.success(f"Raíz aproximada: {c:.8f}")
+    if st.button("Verificar Falsa Posición", key="check_falsa"):
+        correct_c = (1*5 - 3*(-3)) / (5 - (-3))
+        check_answer(correct_c, user_c_falsa, 0.01)
 
 def newton_raphson():
-    st.header("🚀 Método de Newton-Raphson")
+    st.header("🚀 Ejercicios - Newton-Raphson")
     
-    st.write("Método de convergencia rápida que usa derivadas")
+    st.info("Practica el método de Newton-Raphson")
     
-    funcion = st.selectbox("Función:", 
-                          ["x² - 4", "x³ - 2x - 5", "cos(x) - x"],
-                          key="newton_func")
+    st.subheader("Ejercicio: Una Iteración de Newton")
+    st.write("Para f(x) = x² - 4, con x₀ = 3, calcula x₁:")
+    st.latex(r"x_1 = x_0 - \frac{f(x_0)}{f'(x_0)}")
     
-    if funcion == "x² - 4":
-        f = lambda x: x**2 - 4
-        df = lambda x: 2*x
-        x0 = 2.5
-    elif funcion == "x³ - 2x - 5":
-        f = lambda x: x**3 - 2*x - 5
-        df = lambda x: 3*x**2 - 2
-        x0 = 2.0
-    else:  # cos(x) - x
-        f = lambda x: np.cos(x) - x
-        df = lambda x: -np.sin(x) - 1
-        x0 = 0.5
+    st.write("f(x) = x² - 4, f'(x) = 2x")
+    st.write("x₀ = 3, f(3) = 5, f'(3) = 6")
     
-    x0_input = st.number_input("Valor inicial x0:", value=float(x0))
+    user_x1 = st.number_input("Calcula x₁:", value=0.0, step=0.1)
     
-    if st.button("Ejecutar Newton-Raphson"):
-        resultados = []
-        x_curr = x0_input
-        
-        for i in range(10):
-            fx = f(x_curr)
-            dfx = df(x_curr)
-            x_next = x_curr - fx/dfx
-            error = abs(x_next - x_curr)
-            
-            resultados.append((i+1, x_curr, fx, dfx, x_next, error))
-            
-            if error < 1e-8:
-                break
-            x_curr = x_next
-        
-        df_result = pd.DataFrame(resultados, 
-                               columns=["Iter", "x_n", "f(x_n)", "f'(x_n)", "x_{n+1}", "Error"])
-        st.dataframe(df_result.style.format("{:.8f}"), use_container_width=True)
-        st.success(f"Raíz encontrada: {x_curr:.10f}")
+    if st.button("Verificar Newton", key="check_newton"):
+        correct_x1 = 3 - 5/6
+        check_answer(correct_x1, user_x1, 0.01)
 
 def secante():
-    st.header("📏 Método de la Secante")
+    st.header("📏 Ejercicios - Método de la Secante")
     
-    st.write("Similar a Newton pero sin necesidad de derivadas")
+    st.info("Practica el método de la secante")
     
-    funcion = st.selectbox("Función:", 
-                          ["x² - 4", "x³ - 2x - 5", "cos(x) - x"],
-                          key="secante_func")
+    st.subheader("Ejercicio: Método de la Secante")
+    st.write("Para f(x) = x² - 4, con x₀=1, x₁=3, calcula x₂:")
+    st.latex(r"x_2 = x_1 - f(x_1) \cdot \frac{x_1 - x_0}{f(x_1) - f(x_0)}")
     
-    if funcion == "x² - 4":
-        f = lambda x: x**2 - 4
-        x0, x1 = 1, 3
-    elif funcion == "x³ - 2x - 5":
-        f = lambda x: x**3 - 2*x - 5
-        x0, x1 = 2, 3
-    else:  # cos(x) - x
-        f = lambda x: np.cos(x) - x
-        x0, x1 = 0, 1
+    st.write("x₀=1, x₁=3, f(1)=-3, f(3)=5")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        x0_input = st.number_input("x0:", value=float(x0), key="sec_x0")
-    with col2:
-        x1_input = st.number_input("x1:", value=float(x1), key="sec_x1")
+    user_x2 = st.number_input("Calcula x₂:", value=0.0, step=0.1)
     
-    if st.button("Ejecutar Secante"):
-        resultados = []
-        x_prev, x_curr = x0_input, x1_input
-        
-        for i in range(10):
-            f_prev, f_curr = f(x_prev), f(x_curr)
-            x_next = x_curr - f_curr * (x_curr - x_prev) / (f_curr - f_prev)
-            error = abs(x_next - x_curr)
-            
-            resultados.append((i+1, x_prev, x_curr, x_next, f_curr, error))
-            
-            if error < 1e-8:
-                break
-            x_prev, x_curr = x_curr, x_next
-        
-        df_result = pd.DataFrame(resultados, 
-                               columns=["Iter", "x_{n-1}", "x_n", "x_{n+1}", "f(x_n)", "Error"])
-        st.dataframe(df_result.style.format("{:.8f}"), use_container_width=True)
-        st.success(f"Raíz encontrada: {x_curr:.10f}")
-
-def bairstow():
-    st.header("🎭 Método de Bairstow")
-    
-    st.write("Encuentra raíces de polinomios (reales y complejas)")
-    
-    st.info("""
-    Ejemplo: Encontrar raíces de x³ - 6x² + 11x - 6 = 0
-    Las raíces reales son x = 1, 2, 3
-    """)
-    
-    # Coeficientes del polinomio: x³ - 6x² + 11x - 6
-    coef = [1, -6, 11, -6]
-    
-    if st.button("Aplicar Bairstow (simulación)"):
-        st.write("**Proceso simplificado:**")
-        st.write("1. Factorización cuadrática inicial")
-        st.write("2. Refinamiento iterativo")
-        st.write("3. Extracción de raíces")
-        
-        raices = np.roots(coef)
-        
-        st.success("Raíces encontradas:")
-        for i, raiz in enumerate(raices, 1):
-            st.write(f"Raíz {i}: {raiz:.6f}")
+    if st.button("Verificar Secante", key="check_sec"):
+        correct_x2 = 3 - 5 * (3-1)/(5 - (-3))
+        check_answer(correct_x2, user_x2, 0.01)
 
 def inversion_matrices():
-    st.header("🔄 Inversión de Matrices")
+    st.header("🔄 Ejercicios - Inversión de Matrices")
     
-    st.write("Ingresa una matriz 2x2 para invertir:")
+    st.info("Practica la inversión de matrices 2x2")
+    
+    st.subheader("Ejercicio: Inversa de Matriz 2x2")
+    st.write("Calcula la inversa de:")
+    st.latex(r"A = \begin{bmatrix} 2 & 1 \\ 1 & 3 \end{bmatrix}")
     
     col1, col2 = st.columns(2)
-    
     with col1:
-        a11 = st.number_input("a11", value=2.0)
-        a21 = st.number_input("a21", value=1.0)
+        st.write("**Fórmula para matriz 2x2:**")
+        st.latex(r"A^{-1} = \frac{1}{ad-bc} \begin{bmatrix} d & -b \\ -c & a \end{bmatrix}")
     
     with col2:
-        a12 = st.number_input("a12", value=1.0)
-        a22 = st.number_input("a22", value=1.0)
+        user_det = st.number_input("Determinante (ad-bc):", value=0.0, step=0.1)
+        user_inv_11 = st.number_input("Elemento (1,1) de A⁻¹:", value=0.0, step=0.1)
     
-    A = np.array([[a11, a12], [a21, a22]])
-    
-    if st.button("Calcular inversa"):
-        try:
-            det = a11 * a22 - a12 * a21
-            if abs(det) < 1e-10:
-                st.error("Matriz singular - no tiene inversa")
-            else:
-                A_inv = np.linalg.inv(A)
-                
-                st.write("**Matriz original A:**")
-                st.write(A)
-                
-                st.write("**Determinante:**", det)
-                
-                st.write("**Matriz inversa A⁻¹:**")
-                st.write(A_inv)
-                
-                # Verificación
-                I = A @ A_inv
-                st.write("**Verificación A × A⁻¹:**")
-                st.write(I)
-                
-        except np.linalg.LinAlgError:
-            st.error("La matriz no es invertible")
+    if st.button("Verificar Inversa", key="check_inv"):
+        correct_det = 2*3 - 1*1
+        correct_inv_11 = 3/5
+        
+        if check_answer(correct_det, user_det, 0.01) and check_answer(correct_inv_11, user_inv_11, 0.01):
+            st.success("¡Ambas respuestas correctas! +20 puntos")
+            st.session_state.score += 10  # Bonus por ambas correctas
 
 def gauss():
-    st.header("🎯 Eliminación Gaussiana")
+    st.header("🎯 Ejercicios - Eliminación Gaussiana")
     
-    st.write("Resuelve sistemas de ecuaciones lineales")
+    st.info("Resuelve sistemas con eliminación gaussiana")
     
-    sistema = st.selectbox("Sistema ejemplo:", 
-                          ["2x + y = 5, x - y = 1", 
-                           "3x + 2y = 7, x + y = 3"])
+    st.subheader("Ejercicio: Sistema 2x2")
+    st.write("Resuelve:")
+    st.latex(r"\begin{cases} 2x + y = 5 \\ x - y = 1 \end{cases}")
     
-    if sistema == "2x + y = 5, x - y = 1":
-        A = np.array([[2, 1], [1, -1]])
-        b = np.array([5, 1])
-    else:
-        A = np.array([[3, 2], [1, 1]])
-        b = np.array([7, 3])
+    st.write("**Primer paso:** Haz 1 el coeficiente de x en la primera ecuación")
     
-    st.write("**Matriz aumentada:**")
-    Ab = np.column_stack((A, b))
-    st.write(Ab)
+    user_x1_coef = st.number_input("Nuevo coeficiente de y en ec. 1:", value=0.0, step=0.1)
     
-    if st.button("Aplicar Eliminación Gaussiana"):
-        # Eliminación hacia adelante
-        n = len(b)
-        Ab_work = Ab.astype(float).copy()
-        
-        st.write("**Proceso de eliminación:**")
-        
-        for i in range(n):
-            # Pivote
-            pivot = Ab_work[i, i]
-            Ab_work[i, :] = Ab_work[i, :] / pivot
-            
-            st.write(f"Paso {i+1}:")
-            st.write(Ab_work)
-            
-            # Eliminación
-            for j in range(i+1, n):
-                factor = Ab_work[j, i]
-                Ab_work[j, :] = Ab_work[j, :] - factor * Ab_work[i, :]
-        
-        # Sustitución hacia atrás
-        x = np.zeros(n)
-        for i in range(n-1, -1, -1):
-            x[i] = Ab_work[i, -1] - np.sum(Ab_work[i, i+1:n] * x[i+1:n])
-        
-        st.success("**Solución:**")
-        for i in range(n):
-            st.write(f"x{i+1} = {x[i]:.2f}")
+    if st.button("Verificar Primer Paso", key="check_gauss1"):
+        # Dividir primera ecuación por 2: 2x + y = 5 → x + 0.5y = 2.5
+        check_answer(0.5, user_x1_coef, 0.01)
 
 def gauss_jordan():
-    st.header("🔷 Método de Gauss-Jordan")
+    st.header("🔷 Ejercicios - Gauss-Jordan")
     
-    st.write("Encuentra la matriz inversa usando eliminación completa")
+    st.info("Practica la eliminación completa")
     
-    A = np.array([[2, 1], [1, 3]])
+    st.subheader("Ejercicio: Matriz Identidad")
+    st.write("¿Cuál es el objetivo final del método de Gauss-Jordan?")
     
-    st.write("Matriz A:")
-    st.write(A)
+    answer = st.radio(
+        "Selecciona la respuesta correcta:",
+        [
+            "Convertir la matriz en triangular superior",
+            "Convertir la matriz en la identidad", 
+            "Encontrar el determinante",
+            "Calcular autovalores"
+        ],
+        key="gauss_jordan_q"
+    )
     
-    if st.button("Aplicar Gauss-Jordan"):
-        try:
-            # Matriz aumentada [A|I]
-            n = A.shape[0]
-            I = np.eye(n)
-            AI = np.hstack((A, I))
-            
-            st.write("Matriz aumentada [A|I]:")
-            st.write(AI)
-            
-            # Simulación del proceso
-            A_inv = np.linalg.inv(A)
-            
-            st.write("**Matriz inversa resultante A⁻¹:**")
-            st.write(A_inv)
-            
-            # Verificación
-            st.write("**Verificación A × A⁻¹:**")
-            st.write(A @ A_inv)
-            
-        except np.linalg.LinAlgError:
-            st.error("La matriz no es invertible")
+    if st.button("Verificar Objetivo", key="check_gj"):
+        if answer == "Convertir la matriz en la identidad":
+            st.session_state.score += 10
+            st.session_state.exercises_completed += 1
+            st.success("🎉 ¡Correcto! Gauss-Jordan busca la matriz identidad")
+        else:
+            st.error("❌ Incorrecto. Gauss-Jordan transforma la matriz en la identidad")
 
 def jacobi():
-    st.header("🔄 Método de Jacobi")
+    st.header("🔄 Ejercicios - Método de Jacobi")
     
-    st.write("Método iterativo para sistemas lineales")
+    st.info("Practica métodos iterativos")
     
-    st.info("Sistema: 4x + y = 7, x + 3y = 5")
+    st.subheader("Ejercicio: Primera Iteración de Jacobi")
+    st.write("Para el sistema:")
+    st.latex(r"\begin{cases} 4x + y = 7 \\ x + 3y = 5 \end{cases}")
+    st.write("Con valor inicial (x₀,y₀) = (0,0), calcula x₁:")
     
-    A = np.array([[4, 1], [1, 3]])
-    b = np.array([7, 5])
-    x0 = np.array([0, 0])
+    user_x1_jacobi = st.number_input("x₁ = (7 - y₀)/4 =", value=0.0, step=0.1)
     
-    n_iter = st.slider("Iteraciones Jacobi:", 1, 10, 5)
-    
-    if st.button("Ejecutar Jacobi"):
-        resultados = []
-        x = x0.copy()
-        n = len(b)
-        
-        for k in range(n_iter):
-            x_new = np.zeros(n)
-            for i in range(n):
-                suma = 0
-                for j in range(n):
-                    if j != i:
-                        suma += A[i, j] * x[j]
-                x_new[i] = (b[i] - suma) / A[i, i]
-            
-            error = np.linalg.norm(x_new - x)
-            resultados.append((k+1, x_new[0], x_new[1], error))
-            x = x_new.copy()
-        
-        df = pd.DataFrame(resultados, 
-                         columns=["Iter", "x1", "x2", "Error"])
-        st.dataframe(df.style.format("{:.6f}"), use_container_width=True)
-        
-        st.success(f"Solución aproximada: x1 = {x[0]:.6f}, x2 = {x[1]:.6f}")
+    if st.button("Verificar Jacobi", key="check_jacobi"):
+        correct_x1 = (7 - 0)/4
+        check_answer(correct_x1, user_x1_jacobi, 0.01)
 
 def gauss_seidel():
-    st.header("⚡ Método de Gauss-Seidel")
+    st.header("⚡ Ejercicios - Gauss-Seidel")
     
-    st.write("Similar a Jacobi pero usa valores actualizados inmediatamente")
+    st.info("Practica el método de Gauss-Seidel")
     
-    st.info("Sistema: 4x + y = 7, x + 3y = 5")
+    st.subheader("Ejercicio: Diferencia con Jacobi")
+    st.write("¿Cuál es la principal diferencia entre Jacobi y Gauss-Seidel?")
     
-    A = np.array([[4, 1], [1, 3]])
-    b = np.array([7, 5])
-    x0 = np.array([0, 0])
+    answer_gs = st.radio(
+        "Selecciona la respuesta correcta:",
+        [
+            "Jacobi usa todos los valores nuevos en cada iteración",
+            "Gauss-Seidel usa valores actualizados inmediatamente",
+            "Solo Jacobi converge siempre",
+            "Gauss-Seidel es más lento que Jacobi"
+        ],
+        key="gs_q"
+    )
     
-    n_iter = st.slider("Iteraciones Gauss-Seidel:", 1, 10, 5, key="gs_iter")
-    
-    if st.button("Ejecutar Gauss-Seidel"):
-        resultados = []
-        x = x0.copy()
-        n = len(b)
-        
-        for k in range(n_iter):
-            x_old = x.copy()
-            for i in range(n):
-                suma = 0
-                for j in range(n):
-                    if j != i:
-                        suma += A[i, j] * x[j]
-                x[i] = (b[i] - suma) / A[i, i]
-            
-            error = np.linalg.norm(x - x_old)
-            resultados.append((k+1, x[0], x[1], error))
-        
-        df = pd.DataFrame(resultados, 
-                         columns=["Iter", "x1", "x2", "Error"])
-        st.dataframe(df.style.format("{:.6f}"), use_container_width=True)
-        
-        st.success(f"Solución aproximada: x1 = {x[0]:.6f}, x2 = {x[1]:.6f}")
+    if st.button("Verificar Diferencia", key="check_gs"):
+        if answer_gs == "Gauss-Seidel usa valores actualizados inmediatamente":
+            st.session_state.score += 10
+            st.session_state.exercises_completed += 1
+            st.success("🎉 ¡Correcto! Gauss-Seidel actualiza valores sobre la marcha")
+        else:
+            st.error("❌ Incorrecto. Gauss-Seidel usa valores recién calculados")
 
 def cholesky():
-    st.header("🔺 Método de Cholesky")
+    st.header("🔺 Ejercicios - Factorización de Cholesky")
     
-    st.write("Factorización para matrices simétricas definidas positivas")
+    st.info("Practica factorización de matrices")
     
-    A = np.array([[4, 2], [2, 5]])
+    st.subheader("Ejercicio: Requisito de Cholesky")
+    st.write("¿Qué propiedad debe tener una matriz para aplicar Cholesky?")
     
-    st.write("Matriz simétrica A:")
-    st.write(A)
+    answer_chol = st.radio(
+        "Selecciona la respuesta correcta:",
+        [
+            "Ser diagonal",
+            "Ser simétrica y definida positiva", 
+            "Tener determinante cero",
+            "Ser triangular"
+        ],
+        key="cholesky_q"
+    )
     
-    if st.button("Aplicar Cholesky"):
-        try:
-            L = np.linalg.cholesky(A)
-            st.write("**Factor L:**")
-            st.write(L)
-            
-            st.write("**Verificación L × Lᵀ:**")
-            st.write(L @ L.T)
-            
-        except np.linalg.LinAlgError:
-            st.error("La matriz no es definida positiva")
-
-def doolittle():
-    st.header("🔧 Método de Doolittle")
-    
-    st.write("Factorización LU con 1's en la diagonal de L")
-    
-    A = np.array([[2, 1], [1, 3]])
-    
-    st.write("Matriz A:")
-    st.write(A)
-    
-    if st.button("Aplicar Doolittle"):
-        # Factorización LU manual para 2x2
-        L = np.eye(2)
-        U = np.zeros((2, 2))
-        
-        U[0, 0] = A[0, 0]
-        U[0, 1] = A[0, 1]
-        L[1, 0] = A[1, 0] / U[0, 0]
-        U[1, 1] = A[1, 1] - L[1, 0] * U[0, 1]
-        
-        st.write("**Matriz L:**")
-        st.write(L)
-        
-        st.write("**Matriz U:**")
-        st.write(U)
-        
-        st.write("**Verificación L × U:**")
-        st.write(L @ U)
+    if st.button("Verificar Cholesky", key="check_chol"):
+        if answer_chol == "Ser simétrica y definida positiva":
+            st.session_state.score += 10
+            st.session_state.exercises_completed += 1
+            st.success("🎉 ¡Correcto! Cholesky requiere matrices simétricas definidas positivas")
+        else:
+            st.error("❌ Incorrecto. La matriz debe ser simétrica y definida positiva")
 
 def metodo_potencias():
-    st.header("💪 Método de las Potencias")
+    st.header("💪 Ejercicios - Método de las Potencias")
     
-    st.write("Encuentra el autovalor dominante de una matriz")
+    st.info("Practica encontrar autovalores dominantes")
     
-    A = np.array([[2, 1], [1, 3]])
+    st.subheader("Ejercicio: Aproximación Inicial")
+    st.write("Para la matriz A = [[2,1],[1,3]] y vector inicial v₀ = [1,1]")
+    st.write("Calcula la primera aproximación del autovalor:")
     
-    st.write("Matriz A:")
-    st.write(A)
+    user_eigen_approx = st.number_input("Aproximación del autovalor dominante:", value=0.0, step=0.1)
     
-    x0 = np.array([1, 1])
-    n_iter = st.slider("Iteraciones:", 1, 10, 5, key="potencias_iter")
-    
-    if st.button("Ejecutar Método de Potencias"):
-        x = x0.copy()
-        autovalor_approx = 0
-        resultados = []
-        
-        for k in range(n_iter):
-            # Multiplicar por A
-            y = A @ x
-            # Nueva aproximación del autovalor
-            autovalor_new = np.linalg.norm(y, np.inf)
-            # Normalizar
-            x = y / autovalor_new
-            
-            resultados.append((k+1, autovalor_new, x[0], x[1]))
-            autovalor_approx = autovalor_new
-        
-        df = pd.DataFrame(resultados, 
-                         columns=["Iter", "Autovalor", "v1", "v2"])
-        st.dataframe(df.style.format("{:.6f}"), use_container_width=True)
-        
-        # Autovalores reales para comparación
-        autovalores_reales = np.linalg.eigvals(A)
-        autovalor_dominante = max(autovalores_reales)
-        
-        st.success(f"Autovalor dominante aproximado: {autovalor_approx:.6f}")
-        st.info(f"Autovalor dominante real: {autovalor_dominante:.6f}")
+    if st.button("Verificar Autovalor", key="check_eigen"):
+        A = np.array([[2, 1], [1, 3]])
+        v0 = np.array([1, 1])
+        Av = A @ v0
+        correct_approx = np.linalg.norm(Av, np.inf)  # Norma infinito
+        check_answer(correct_approx, user_eigen_approx, 0.1)
