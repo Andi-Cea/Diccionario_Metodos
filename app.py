@@ -16,7 +16,7 @@ menu = st.sidebar.radio(
     ["Diccionario", "Agregar", "Eliminar", "Métodos Numéricos I", "Métodos Numéricos II"]
 )
 
-st.title("📘 Diccionario de Métodos Numéricos ( )")
+st.title("📘 Diccionario de Métodos Numéricos ")
 
 # Cargar datos
 data = get_definicions()
