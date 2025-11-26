@@ -1,9 +1,9 @@
-# ejemplos.py
 import streamlit as st
-from app import get_definicions  # importa la función de tu diccionario
+from datos import get_definicions
 
 def app():
     st.title("📘 Ejemplos y Ejercicios")
+    st.write("Aquí puedes practicar con ejercicios generados a partir de los términos del diccionario.")
 
     rows = get_definicions()
     terminos = [r[1] for r in rows]
@@ -25,9 +25,14 @@ def app():
     ejercicio_default = f"Explica con tus palabras qué significa **{termino}** y da un ejemplo práctico sencillo."
     ejercicio = ejercicios_base.get(termino, ejercicio_default)
 
+    st.markdown("---")
+    st.subheader(f"Ejercicio sobre **{termino}**")
     st.write(ejercicio)
+
     st.markdown("---")
     st.subheader("Tu solución")
     st.text_area("Escribe aquí tu razonamiento o solución:", height=150)
+
     if st.button("Guardar respuesta"):
-        st.success("Respuesta guardada (no realmente, pero te aplaudo mentalmente 😄).")
+        st.success("Respuesta guardada (no realmente 😄).")
+
