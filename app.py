@@ -49,6 +49,7 @@ def delete_definicion(termino):
 from metodos_numericos import metodos_numericos
 from metodos_numericos_dos import metodos_numericos_dos
 from ejemplos.ejemplos import app as ejemplos_app  # CORREGIDO: import correcto de la función app
+from ejemplos2.ejemplos2 import app as ejemplos_app  # CORREGIDO: import correcto de la función app
 
 # ========================
 # Configuración
