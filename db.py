@@ -54,10 +54,10 @@ def update_definicion(termino, definicion):
     cur.close()
     conn.close()
 
-def delete_definicion(id):
+def delete_definicion(termino):
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("DELETE FROM definicions WHERE id = %s;", (id,))
+    cur.execute("DELETE FROM definicions WHERE termino = %s;", (termino,))
     conn.commit()
     cur.close()
     conn.close()
