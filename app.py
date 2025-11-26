@@ -161,7 +161,7 @@ elif menu == "Métodos Numéricos II":
 # ===========================================================
 # VISTA EJEMPLOS
 # ===========================================================
-elif menu == "Ejemplos":
+elif menu == "Ejemplos Métodos Numéricos I":
     ejemplos_app()
-elif menu == "Ejemplos2":
+elif menu == "Ejemplos Métodos Numéricos II":
     ejemplos_app()
