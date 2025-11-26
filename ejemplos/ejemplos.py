@@ -1,10 +1,27 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
-import sympy as sp
+import pandas as pd
+
+# Manejo de matplotlib con try-except
+try:
+    import matplotlib.pyplot as plt
+    MATPLOTLIB_AVAILABLE = True
+except ImportError:
+    MATPLOTLIB_AVAILABLE = False
+    st.warning("Matplotlib no está disponible. Las gráficas no se mostrarán.")
+
+try:
+    import sympy as sp
+    SYMPY_AVAILABLE = True
+except ImportError:
+    SYMPY_AVAILABLE = False
+    st.warning("Sympy no está disponible. Algunas funciones pueden no trabajar.")
 
 def app():
     st.title("🔬 Ejemplos Interactivos - Métodos Numéricos")
+    
+    if not MATPLOTLIB_AVAILABLE:
+        st.error("⚠️ Se requiere instalar matplotlib: `pip install matplotlib`")
     
     # Menú de métodos
     metodo = st.sidebar.selectbox(
@@ -29,38 +46,29 @@ def app():
         ]
     )
     
-    if metodo == "1.2 Errores Numéricos":
-        errores_numericos()
-    elif metodo == "1.3 Propagación del Error":
-        propagacion_error()
-    elif metodo == "1.4 Orden de Convergencia":
-        orden_convergencia()
-    elif metodo == "2.1 Bisección":
-        biseccion()
-    elif metodo == "2.2 Falsa Posición":
-        falsa_posicion()
-    elif metodo == "2.3 Newton-Raphson":
-        newton_raphson()
-    elif metodo == "2.4 Secante":
-        secante()
-    elif metodo == "2.5 Bairstow":
-        bairstow()
-    elif metodo == "3.1 Inversión de Matrices":
-        inversion_matrices()
-    elif metodo == "3.2 Gauss":
-        gauss()
-    elif metodo == "3.3 Gauss-Jordan":
-        gauss_jordan()
-    elif metodo == "3.4 Jacobi":
-        jacobi()
-    elif metodo == "3.5 Gauss-Seidel":
-        gauss_seidel()
-    elif metodo == "4.2 Cholesky":
-        cholesky()
-    elif metodo == "4.3 Doolittle":
-        doolittle()
-    elif metodo == "5.1 Método de Potencias":
-        metodo_potencias()
+    # Diccionario de métodos
+    metodos = {
+        "1.2 Errores Numéricos": errores_numericos,
+        "1.3 Propagación del Error": propagacion_error,
+        "1.4 Orden de Convergencia": orden_convergencia,
+        "2.1 Bisección": biseccion,
+        "2.2 Falsa Posición": falsa_posicion,
+        "2.3 Newton-Raphson": newton_raphson,
+        "2.4 Secante": secante,
+        "2.5 Bairstow": bairstow,
+        "3.1 Inversión de Matrices": inversion_matrices,
+        "3.2 Gauss": gauss,
+        "3.3 Gauss-Jordan": gauss_jordan,
+        "3.4 Jacobi": jacobi,
+        "3.5 Gauss-Seidel": gauss_seidel,
+        "4.2 Cholesky": cholesky,
+        "4.3 Doolittle": doolittle,
+        "5.1 Método de Potencias": metodo_potencias
+    }
+    
+    # Ejecutar método seleccionado
+    if metodo in metodos:
+        metodos[metodo]()
 
 def errores_numericos():
     st.header("🔍 Errores de Redondeo y Truncamiento")
@@ -137,6 +145,10 @@ def propagacion_error():
 
 def orden_convergencia():
     st.header("📊 Orden de Convergencia")
+    
+    if not MATPLOTLIB_AVAILABLE:
+        st.error("Matplotlib no disponible para gráficas")
+        return
     
     metodo = st.selectbox("Selecciona método:", 
                          ["Bisección (lineal)", "Newton (cuadrático)", "Secante (superlineal)"])
@@ -240,19 +252,20 @@ def biseccion():
         
         st.success(f"Raíz aproximada: {c:.8f}")
         
-        # Gráfica
-        x_vals = np.linspace(a_input, b_input, 100)
-        y_vals = f(x_vals)
-        
-        fig, ax = plt.subplots()
-        ax.plot(x_vals, y_vals, 'b-', label='f(x)')
-        ax.axhline(y=0, color='k', linestyle='--')
-        ax.plot(c, fc, 'ro', markersize=8, label='Raíz encontrada')
-        ax.set_xlabel('x')
-        ax.set_ylabel('f(x)')
-        ax.legend()
-        ax.grid(True)
-        st.pyplot(fig)
+        # Gráfica si matplotlib está disponible
+        if MATPLOTLIB_AVAILABLE:
+            x_vals = np.linspace(a_input, b_input, 100)
+            y_vals = f(x_vals)
+            
+            fig, ax = plt.subplots()
+            ax.plot(x_vals, y_vals, 'b-', label='f(x)')
+            ax.axhline(y=0, color='k', linestyle='--')
+            ax.plot(c, fc, 'ro', markersize=8, label='Raíz encontrada')
+            ax.set_xlabel('x')
+            ax.set_ylabel('f(x)')
+            ax.legend()
+            ax.grid(True)
+            st.pyplot(fig)
 
 def falsa_posicion():
     st.header("📐 Método de Falsa Posición")
