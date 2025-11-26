@@ -159,6 +159,8 @@ elif menu == "Métodos Numéricos I":
 
 elif menu == "Métodos Numéricos II":
     metodos_numericos_dos.app()
+elif menu == "Métodos Numéricos Ejemplos":
+    metodos_numericos_dos.app()
 
 
 
