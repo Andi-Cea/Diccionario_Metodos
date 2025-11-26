@@ -1,33 +1,82 @@
 import streamlit as st
 import pandas as pd
+import json
+import os
 
-from datos import get_definicions, insert_definicion, update_definicion_by_id, delete_definicion
-import ejemplos
+# ========================
+# Helpers JSON (Datos)
+# ========================
+DATA_FILE = "data.json"
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {"conceptos": []}
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+def get_definicions():
+    data = load_data()
+    return [(c["id"], c["termino"], c["definicion"]) for c in data["conceptos"]]
+
+def insert_definicion(termino, definicion):
+    data = load_data()
+    conceptos = data["conceptos"]
+    new_id = max([c["id"] for c in conceptos], default=0) + 1
+    conceptos.append({"id": new_id, "termino": termino, "definicion": definicion})
+    save_data(data)
+
+def update_definicion_by_id(registro_id, termino, definicion):
+    data = load_data()
+    for c in data["conceptos"]:
+        if c["id"] == registro_id:
+            c["termino"] = termino
+            c["definicion"] = definicion
+            break
+    save_data(data)
+
+def delete_definicion(termino):
+    data = load_data()
+    data["conceptos"] = [c for c in data["conceptos"] if c["termino"] != termino]
+    save_data(data)
+
+# ========================
+# Importar vistas
+# ========================
 from metodos_numericos import metodos_numericos
 from metodos_numericos_dos import metodos_numericos_dos
+from ejemplos import app as ejemplos_app  # Importar solo la función de ejemplos
 
-# Configuración de la página
+# ========================
+# Configuración de Streamlit
+# ========================
 st.set_page_config(page_title="Diccionario Métodos Numéricos", layout="centered")
 
+# ========================
 # Menú lateral
+# ========================
 menu = st.sidebar.radio(
     "Selecciona una vista:",
     ["Diccionario", "Métodos Numéricos I", "Métodos Numéricos II", "Ejemplos"]
 )
 
-# =========================
-# DICCIONARIO
-# =========================
+# ===========================================================
+# VISTA DICCIONARIO
+# ===========================================================
 if menu == "Diccionario":
     st.title("📘 Diccionario de Métodos Numéricos")
 
     # Buscador
-    col1, col2 = st.columns([3,1])
+    col1, col2 = st.columns([3, 1])
     with col1:
         query = st.text_input("Buscar término", placeholder="Escribe una palabra...")
     with col2:
         exact = st.checkbox("Exacto")
 
+    # Cargar datos
     rows = get_definicions()
     data = {r[1]: r[2] for r in rows}
     id_map = {r[1]: r[0] for r in rows}
@@ -37,8 +86,8 @@ if menu == "Diccionario":
         if not q:
             return sorted(data.items())
         if exact_match:
-            return [(k,v) for k,v in data.items() if k.lower() == q]
-        return [(k,v) for k,v in data.items() if q in k.lower() or q in v.lower()]
+            return [(k, v) for k, v in data.items() if k.lower() == q]
+        return [(k, v) for k, v in data.items() if q in k.lower() or q in v.lower()]
 
     results = search(query, exact)
 
@@ -95,13 +144,19 @@ if menu == "Diccionario":
             df = pd.DataFrame(rows, columns=["ID", "Término", "Definición"])
             st.dataframe(df, use_container_width=True)
 
-# =========================
-# MÉTODOS NUMÉRICOS
-# =========================
+# ===========================================================
+# VISTAS DE MÉTODOS NUMÉRICOS
+# ===========================================================
 elif menu == "Métodos Numéricos I":
     metodos_numericos.app()
+
 elif menu == "Métodos Numéricos II":
     metodos_numericos_dos.app()
+
+# ===========================================================
+# VISTA DE EJEMPLOS
+# ===========================================================
 elif menu == "Ejemplos":
-    ejemplos.app()
+    ejemplos_app()
+
 

@@ -1,5 +1,5 @@
 import streamlit as st
-from datos import get_definicions
+from datos import get_definicions  # solo datos, nada de app.py
 
 def app():
     st.title("📘 Ejemplos y Ejercicios")
@@ -35,4 +35,3 @@ def app():
 
     if st.button("Guardar respuesta"):
         st.success("Respuesta guardada (no realmente 😄).")
-
