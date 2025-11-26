@@ -1,141 +1,164 @@
 import streamlit as st
 import pandas as pd
-from db import get_definicions, insert_definicion, delete_definicion
+import json
+import os
 
-# Vistas
+# ========================
+# Helpers JSON
+# ========================
+DATA_FILE = "data.json"
+
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {"conceptos": []}
+    with open(DATA_FILE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def save_data(data):
+    with open(DATA_FILE, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
+
+def get_definicions():
+    data = load_data()
+    return [(c["id"], c["termino"], c["definicion"]) for c in data["conceptos"]]
+
+def insert_definicion(termino, definicion):
+    data = load_data()
+    conceptos = data["conceptos"]
+    new_id = max([c["id"] for c in conceptos], default=0) + 1
+    conceptos.append({"id": new_id, "termino": termino, "definicion": definicion})
+    save_data(data)
+
+def update_definicion_by_id(registro_id, termino, definicion):
+    data = load_data()
+    for c in data["conceptos"]:
+        if c["id"] == registro_id:
+            c["termino"] = termino
+            c["definicion"] = definicion
+            break
+    save_data(data)
+
+def delete_definicion(termino):
+    data = load_data()
+    data["conceptos"] = [c for c in data["conceptos"] if c["termino"] != termino]
+    save_data(data)
+
+# ========================
+# Importar vistas
+# ========================
 from metodos_numericos import metodos_numericos
 from metodos_numericos_dos import metodos_numericos_dos
 
-# CONFIG
-st.set_page_config(page_title="Diccionario", layout="wide")
+# ========================
+# Configuración
+# ========================
+st.set_page_config(page_title="Diccionario Métodos Numéricos", layout="centered")
 
-# =========================
-# ESTILOS (solo apariencia)
-# =========================
-st.markdown("""
-    <style>
-        /* Contenedor de tarjetas */
-        .card {
-            background-color: #1e1e1e;
-            padding: 18px;
-            border-radius: 12px;
-            border: 1px solid #3a3a3a;
-            margin-bottom: 15px;
-        }
-        .titulo {
-            font-size: 22px;
-            font-weight: bold;
-            color: #4ca3ff;
-        }
-        .defin {
-            font-size: 16px;
-            color: #ffffff;
-            margin-top: 8px;
-        }
-        .stTextInput>div>div>input {
-            background-color: #111;
-            color: white;
-        }
-        .stTextArea textarea {
-            background-color: #111;
-            color: white;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
-# =========================
-# SIDEBAR
-# =========================
 menu = st.sidebar.radio(
-    "Navegación",
-    ["Diccionario", "Agregar", "Eliminar", "Métodos Numéricos I", "Métodos Numéricos II"]
+    "Selecciona una vista:",
+    ["Diccionario", "Métodos Numéricos I", "Métodos Numéricos II"]
 )
 
-st.title("📘 Diccionario de Métodos Numéricos")
-
-# Cargar datos
-data = get_definicions()
-df = pd.DataFrame(data, columns=["id", "termino", "definicion"])
-
-# =========================
-# DICCIONARIO / BUSCAR
-# =========================
+# ===========================================================
+# VISTA DICCIONARIO (MISMA QUE CÁLCULO III)
+# ===========================================================
 if menu == "Diccionario":
-    st.subheader("Buscar término")
-    buscar = st.text_input("Escribe algo para buscar:")
+    st.title("📘 Diccionario de Métodos Numéricos")
 
-    filtrado = data
-    if buscar:
-        filtrado = [
-            x for x in data
-            if buscar.lower() in x["termino"].lower()
-            or buscar.lower() in x["definicion"].lower()
-        ]
-
-    # Render bonito tipo "cards"
-    for item in filtrado:
-        st.markdown(
-            f"""
-            <div class="card">
-                <div class="titulo">{item['termino']}</div>
-                <div class="defin">{item['definicion']}</div>
-                <small style="color:#888;">ID: {item['id']}</small>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-# =========================
-# AGREGAR / EDITAR
-# =========================
-elif menu == "Agregar":
-    st.subheader("Agregar o actualizar término")
-
-    col1, col2 = st.columns([2, 3])
+    # Buscador
+    col1, col2 = st.columns([3, 1])
     with col1:
-        t = st.text_input("Término:")
+        query = st.text_input("Buscar término", placeholder="Escribe una palabra...")
     with col2:
-        d = st.text_area("Definición:", height=150)
+        exact = st.checkbox("Exacto")
 
-    if st.button("Guardar", use_container_width=True):
-        if t.strip() and d.strip():
-            insert_definicion(t, d)
-            st.success("Guardado correctamente.")
-            st.rerun()
+    # Cargar datos
+    rows = get_definicions()
+    data = {r[1]: r[2] for r in rows}
+    id_map = {r[1]: r[0] for r in rows}
+
+    def search(q, exact_match):
+        q = q.strip().lower()
+        if not q:
+            return sorted(data.items())
+        if exact_match:
+            return [(k, v) for k, v in data.items() if k.lower() == q]
+        return [(k, v) for k, v in data.items() if q in k.lower() or q in v.lower()]
+
+    results = search(query, exact)
+
+    st.markdown("---")
+    st.subheader(f"Resultados ({len(results)})")
+
+    # Expanders como en Cálculo
+    for palabra, defin in results:
+        with st.expander(palabra):
+            st.write(defin)
+
+            colA, colB = st.columns(2)
+
+            with colA:
+                if st.button("✏️ Editar", key=f"edit_{palabra}"):
+                    st.session_state["edit_word"] = palabra
+                    st.session_state["edit_def"] = defin
+                    st.session_state["edit_id"] = id_map[palabra]
+                    st.rerun()
+
+            with colB:
+                if st.button("🗑️ Eliminar", key=f"del_{palabra}"):
+                    delete_definicion(palabra)
+                    st.success(f"'{palabra}' eliminado.")
+                    st.rerun()
+
+    st.markdown("---")
+
+    # Formulario Agregar/Editar (idéntico al de Cálculo)
+    st.subheader("Añadir o editar término")
+
+    default_word = st.session_state.get("edit_word", "")
+    default_def = st.session_state.get("edit_def", "")
+
+    with st.form("form_add"):
+        word = st.text_input("Término", value=default_word)
+        definition = st.text_area("Definición", value=default_def, height=150)
+        submitted = st.form_submit_button("Guardar")
+
+    if submitted:
+        word = word.strip()
+        definition = definition.strip()
+
+        if not word:
+            st.error("El término no puede estar vacío.")
         else:
-            st.error("Completa ambos campos.")
+            if "edit_id" in st.session_state:
+                registro_id = st.session_state["edit_id"]
+                update_definicion_by_id(registro_id, word, definition)
+                st.success(f"Actualizado: {word}")
 
-# =========================
-# ELIMINAR
-# =========================
-elif menu == "Eliminar":
-    st.subheader("Eliminar término")
+                del st.session_state["edit_word"]
+                del st.session_state["edit_def"]
+                del st.session_state["edit_id"]
 
-    if not df.empty:
-        st.dataframe(df, use_container_width=True)
+            else:
+                insert_definicion(word, definition)
+                st.success(f"Guardado: {word}")
 
-        id_borrar = st.number_input("ID a borrar", min_value=1, step=1)
-
-        if st.button("Eliminar", use_container_width=True):
-            delete_definicion(id_borrar)
-            st.warning("Elemento eliminado.")
             st.rerun()
 
-    else:
-        st.info("No hay datos para eliminar.")
+    # Tabla completa
+    if st.checkbox("Mostrar tabla completa"):
+        if rows:
+            df = pd.DataFrame(rows, columns=["ID", "Término", "Definición"])
+            st.dataframe(df, use_container_width=True)
 
-# =========================
-# MÉTODOS NUMÉRICOS I
-# =========================
+# ===========================================================
+# VISTAS DE MÉTODOS NUMÉRICOS
+# ===========================================================
 elif menu == "Métodos Numéricos I":
     metodos_numericos.app()
 
-# =========================
-# MÉTODOS NUMÉRICOS II
-# =========================
 elif menu == "Métodos Numéricos II":
     metodos_numericos_dos.app()
-
 
 
 
